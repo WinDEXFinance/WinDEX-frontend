@@ -51,9 +51,5 @@ ${({ theme, size, darkMode, fullWidth }) => css`
     background-color: ${theme.colors.primary};
     transform: translateY(0.4rem);
   }
-  :disabled {
-    background-color: #1C2023;
-    cursor: not-allowed;
-  }
 `}
 `

@@ -1,17 +1,17 @@
-import React from 'react'
 import { IOrderBookData } from 'templates/dashboard/blocks/Graph/IGraph'
 
+import OrderBookOrder from '../OrderBookOrder'
+import OrderBookOrder_b from '../OrderBookOrder_B'
 import * as S from './styles'
-import OrderBookTableBody from '../OrderBookTableBody'
 
 export type OrderBookTableProps = {
-  orderBookAsks: IOrderBookData[];
-  orderBookBids: IOrderBookData[];
-  latestTransaction: string;
-  latestTransactionType: string;
+  active?: number
+  data: IOrderBookData[]
 }
 
-const OrderBookTable = ({ latestTransaction, latestTransactionType, orderBookAsks, orderBookBids }: OrderBookTableProps) => {
+const OrderBookTable = ({ active = 0, data }: OrderBookTableProps) => {
+
+  const filterBy = (side) => data.filter(item => item.side === side)
 
   return (
   <S.Wrapper>
@@ -22,30 +22,14 @@ const OrderBookTable = ({ latestTransaction, latestTransactionType, orderBookAsk
           <S.Th>Amount</S.Th>
         </S.Tr>
         </S.Thead>
-        <OrderBookTableBody data={orderBookAsks} isScrollBottom={true} exchangeImg={"/img/icons/Exchange_B.svg"} />
-    </S.Table>
+        <S.Tbody>
+          {data && filterBy('buy').map(item => ( <OrderBookOrder key={item.id} data={item}/> ))}
+      </S.Tbody>
+      </S.Table>
 
-    <S.LastTransaction>
-      <p>
-        Latest transaction&nbsp;
-        {
-          latestTransactionType ?
-            (
-              latestTransactionType === 'AskLimit'
-                ? <S.VolumeLow>
-                    {latestTransaction}
-                </S.VolumeLow>
-                : <S.VolumeHigh>
-                    {latestTransaction}
-                </S.VolumeHigh>
-            )
-            : <span>
-                {latestTransaction}
-              </span>
-        }
-      </p>
+      <S.LastTransaction active={active}>
+        <p>Latest transaction&nbsp;&nbsp;<span>{active} </span></p>
     </S.LastTransaction>
-
     <S.Table>
         <S.Thead>
           <S.Tr>
@@ -53,7 +37,9 @@ const OrderBookTable = ({ latestTransaction, latestTransactionType, orderBookAsk
             <S.Th>Amount</S.Th>
           </S.Tr>
         </S.Thead>
-        <OrderBookTableBody data={orderBookBids} isScrollBottom={false} exchangeImg={"/img/icons/Exchange_A.svg"}/>
+        <S.Tbody>
+          {data && filterBy('sell').map(item => ( <OrderBookOrder_b key={item.id} data={item}/> ))}
+        </S.Tbody>
     </S.Table>
 
   </S.Wrapper>

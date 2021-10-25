@@ -1,5 +1,5 @@
-import Landing from 'templates/landing'
+import Dashboard from 'templates/dashboard'
 
-export default function LandingPage(props) {
-  return <Landing {...props} />
+export default function Home() {
+  return <Dashboard />
 }

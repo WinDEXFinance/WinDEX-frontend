@@ -24,7 +24,7 @@ export const Thead = styled.thead`
 export const Tbody = styled.tbody`
   color: white;
   font-size: 1.2rem;
-  height: 17rem;
+  height: 13rem;
   display: block;
   overflow-y: auto;
   tr {
@@ -38,29 +38,27 @@ export const Th = styled.th`
     font-weight: 200;
 `;
 
-export const LastTransaction = styled.div`
+export const LastTransaction = styled.div<Pick<OrderBookTableProps,'active'>>`
   background-color:#1D2127;
   padding: 1.5rem 1rem;
   text-align:center;
   margin: 1rem 0;
   border-radius: 0.5rem;
   margin-right: 2rem;
-  color: #ffffff; 
-  
+  p{
+    color: #ffffff;  }
   span {
     font-weight: 700;
     color:#0CA564;
   }
+  ${({active, theme }) => css`
+    color: ${active ? theme.colors.primary: theme.colors.white};
+  `}
+  }
+
+
 `
 
-export const VolumeHigh = styled.span`
-  ${({ theme }) => css`
-    color: ${theme.colors.green};
-  `}
-`;
 
-export const VolumeLow = styled.span`
-  ${({ theme }) => css`
-    color: ${theme.colors.primary} !important;
-  `}
-`;
+
+

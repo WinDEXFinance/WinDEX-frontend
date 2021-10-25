@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
 import Checkbox from 'components/general/Checkbox'
+import DateRange from 'components/general/DateRange';
 import Dropdown from 'components/general/Dropdown'
 import DropdownItem from 'components/general/DropdownItem';
+import Icon from 'components/general/Icon'
 import TransactionTable from 'components/general/TransactionTable'
+import { useState } from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
 import { ITransactions } from './ITransactions';
 import * as S from './styles'
-import OpenOrderTable from '../../../../components/general/OpenOrderTable'
-import Toast from '../../../../components/general/Toast'
 
 const initialFilters = {
   hiddenPairs: false,
@@ -17,28 +17,24 @@ const initialFilters = {
   status: "All Transactions"
 }
 
-const Transactions = ({ data, openOrderData, newTradeData, remove, activeIndex, setActiveIndex }: ITransactions, pair = "DOT") => {
+const Transactions = ({ data, newTradeData, remove }: ITransactions, pair = "DOT") => {
   const [filters, setFilters] = useState(initialFilters)
-  const [dropdownState, setDropdownState] = useState(false)
 
   // Filters Actions
   const handleChangeHidden = () =>  setFilters({ ...filters, hiddenPairs: !filters.hiddenPairs })
-  const handleChangeStatus = (status: string) => {
-    setDropdownState(false);
-    setFilters({ ...filters, status })
-  }
+  const handleChangeStatus = (status: string) => setFilters({ ...filters, status })
   const handleChangeBuy = () => setFilters({ ...filters, onlyBuy: !filters.onlyBuy })
   const handleChangeSell = () => setFilters({ ...filters, onlySell: !filters.onlySell! })
 
   return (
     <S.Section>
-      <Tabs selectedIndex={activeIndex} onSelect={(index) => setActiveIndex(index)}>
+      <Tabs>
         <S.Header>
           <TabList>
             <Tab>Open Orders</Tab>
             <Tab>Order History</Tab>
             <Tab>Trade History</Tab>
-            <Tab>New Trade</Tab>
+            <Tab>Funds</Tab>
           </TabList>
           <S.WrapperActions>
             <Checkbox title="Hide Other Pairs" checked={filters.hiddenPairs} action={handleChangeHidden} />
@@ -47,10 +43,10 @@ const Transactions = ({ data, openOrderData, newTradeData, remove, activeIndex, 
               <Checkbox title="Sell" checked={filters.onlySell} action={handleChangeSell}/>
             </S.ContainerActions>
             <S.ContainerTransactions>
-              <Dropdown title={filters.status} active={dropdownState} setDropdownState={setDropdownState}>
+              <Dropdown title={filters.status}>
                 <>
                   <DropdownItem title="All Transactions" handleAction={handleChangeStatus} />
-                  <DropdownItem title="Pending" handleAction={handleChangeStatus} />
+                  <DropdownItem title="Pending" handleAction={ handleChangeStatus} />
                   <DropdownItem title="Completed" handleAction={handleChangeStatus} />
                   <DropdownItem title="Canceled" handleAction={handleChangeStatus} />
                 </>
@@ -60,7 +56,7 @@ const Transactions = ({ data, openOrderData, newTradeData, remove, activeIndex, 
           </S.WrapperActions>
         </S.Header>
         <TabPanel>
-          <OpenOrderTable data={openOrderData} remove={remove} filters={filters}/>
+          <TransactionTable data={data} remove={remove} filters={filters}/>
         </TabPanel>
         <TabPanel>
           <TransactionTable data={data} remove={remove} filters={filters}/>
@@ -72,7 +68,7 @@ const Transactions = ({ data, openOrderData, newTradeData, remove, activeIndex, 
           <TransactionTable data={newTradeData} remove={remove} filters={filters} />
         </TabPanel>
       </Tabs>
-      <Toast />
+
     </S.Section>
   )
 }

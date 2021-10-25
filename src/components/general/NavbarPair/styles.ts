@@ -17,9 +17,10 @@ export const WrapperExchange = styled.div`
 `
 
 export const Label = styled.span`
+  font-size: 1.1rem;
   margin-bottom: 0.3rem;
-  font-size: 1.2rem;
-  color: #d8d8d8;
+  color: #8BA1BE;
+  font-weight: 100;
 `;
 
 export const Container = styled.div`

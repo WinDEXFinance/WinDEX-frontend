@@ -1,37 +1,98 @@
 import React, { useEffect,useState } from 'react'
+// Fake Data
+import { fakeGetGraphData, fakeLatestListings, fakeTransactionsOrders } from 'utils/fakeData/'
+import { IMarketToken } from 'utils/Interfaces'
 
-import { webSocket } from '../../components/dashboard/CustomChart/api/stream'
 import Graph from './blocks/Graph'
+import Market from './blocks/Market'
 import MarketOrder from './blocks/MarketOrder'
 import Menu from './blocks/Menu'
 import Navbar from './blocks/Navbar'
 import Transactions from './blocks/Transactions'
 import * as S from './styles'
-import Toast from '../../components/general/Toast'
 
-export default function Dashboard({ account, blockchainApi }) {
+import { io } from 'socket.io-client';
+
+const initialState = {
+  "id": 1,
+  "name": "Bitcoin",
+  "symbol": "BTC",
+  "slug": "bitcoin",
+  "num_market_pairs": 9191,
+  "date_added": "2013-04-28T00:00:00.000Z",
+  "tags": [
+    "mineable",
+    "pow",
+    "sha-256",
+    "store-of-value",
+    "state-channels"
+  ],
+  "max_supply": 21000000,
+  "circulating_supply": 18530387,
+  "total_supply": 18530387,
+  "platform": null,
+  "cmc_rank": 1,
+  "last_updated": "2020-10-31T11:50:02.000Z",
+  "quote": {
+    "USD": {
+      "price": 13882.426203037483,
+      "volume_24h": 32714795587.32121,
+      "percent_change_1h": 0.83355575,
+      "percent_change_24h": 4.71387887,
+      "percent_change_7d": 6.98381798,
+      "market_cap": 257246730041.22513,
+      "last_updated": "2020-10-31T11:50:02.000Z"
+    }
+  }
+}
+export default function Dashboard() {
 
   const [state, setState] = useState(false)
-  const [orderBookBids, setOrderBookBids] = useState([])
-  const [orderBookAsks, setOrderBookAsks] = useState([])
+  const [transactions, setTransactions] = useState([])
+  const [orderBook, setOrderBook] = useState([])
+  const [graphData, setGraphData] = useState([])
+  const [coins, setCoins] = useState<any>([])
+  const [current, setCurrent] = useState(initialState)
   const [volume, setVolume] = useState(0);
-  const [blockPrice, setBlockPrice] = useState("0.00");
-  const [high, setHigh] = useState(0);
-  const [low, setLow] = useState(0);
   const [lastTradePrice, setLastTradePrice] = useState(0);
   const [lastTradePriceType, setLastTradePriceType] = useState();
   const [newTrade, setNewTrade] = useState();
-  const [openOrders, setOpenOrders] = useState([]);
-  const [price, setPrice] = useState<string>('0')
-  const [amount, setAmount] = useState<string>('0')
-  const [activeIndex, setActiveIndex] = useState(3);
 
-  const removeTransactionsOrder = (id: string) => console.log('remove transaction' + id);
+  const webSocket = io.connect("https://testnet.polkadex.trade:3000", {secure: true, transports: ['websocket']});
 
-  const fetchOrderBookBids = (socket) => {
-    socket.on('bids_levels', async (bid_levels) => {
+  // Fake Transactions Orders Actions
+  const transactionActions = {
+    getTransactionsOrders: () => setTransactions(fakeTransactionsOrders),
+    removeTransactionsOrder : (id: string) => {
+      const removeItem = transactions.filter(item => item.id !== id)
+      setTransactions(removeItem)
+    }
+  }
+
+  // Market Tokens Actions
+  const marketTokenActions = {
+    getTokensInfo : () => setCoins(fakeLatestListings)
+  }
+
+  // Token Actions
+  const tokenActions = {
+    // getDefaultTokenInfo: (coins: IMarketToken[], select: number) => setCurrent(coins.find(item => item.id === select)),
+    onChangetoken: () => console.log("Change Token"),
+    // getOrderBookOrders: () => setOrderbook(fakeOrderBook),
+    getGraphData: async() => {
+      const data = await fakeGetGraphData()
+      setGraphData(data.slice(0, 100))
+    }
+  }
+
+  const fetchMarketData = () => {
+    webSocket.on('market-data-stream', ({ volume }) => setVolume(volume));
+  }
+
+  const fetchOrderBookData = () => {
+    webSocket.on('orderbook-updates', async ({ bid_levels, ask_levels }) => {
       let currentOrderBook = [];
-
+      console.log(bid_levels, ask_levels)
       bid_levels.map(({ price, quantity }) => {
         currentOrderBook.push({
           id: currentOrderBook.length + 1,
@@ -44,14 +105,6 @@ export default function Dashboard({ account, blockchainApi }) {
           total: quantity * price,
         });
       });
-      await setOrderBookBids(currentOrderBook.sort((first, second) => second.price - first.price));
-    });
-  }
-
-  const fetchOrderBookAsks = (socket) => {
-    socket.on('asks_levels', async (ask_levels) => {
-      let currentOrderBook = [];
-
       ask_levels.map(({ price, quantity }) => {
         currentOrderBook.push({
           id: currentOrderBook.length + 1,
@@ -64,84 +117,53 @@ export default function Dashboard({ account, blockchainApi }) {
           total: quantity * price,
         });
       });
-      await setOrderBookAsks(currentOrderBook.sort((first, second) => second.price - first.price));
+      await setOrderBook(currentOrderBook.sort((first, second) => second.price - first.price));
     });
   }
 
-  const fetchLastTrade = (socket) => {
-    socket.on('last-trade', lastTradeData => {
+  const fetchLastTrade = () => {
+    webSocket.on('last-trade', lastTradeData => {
       setLastTradePriceType(lastTradeData.side);
       setLastTradePrice(lastTradeData.price);
     });
   }
 
-  const fetchNewTrade = (socket) => {
-    socket.on('new-trade', payload => {
-      if (payload.length !== 0) {
-        setNewTrade(payload);
-      }
+  const fetchNewTrade = () => {
+    webSocket.on('new-trade', payload => {
+      setNewTrade(payload);
     });
-  }
-
-  const fetchMarketData = (socket) => {
-    socket.on('market-data-stream', ({ volume, open, close, low, high }) => {
-      const blockPriceValue = open === 0 ? 0 : (open - close) * 100 / open;
-      if (+blockPriceValue.toFixed(2) !== 0) {
-        setBlockPrice(blockPriceValue.toFixed(2));
-      }
-      if (+high.toFixed(2) !== 0) {
-        setHigh(high.toFixed(2))
-      }
-      if (+low.toFixed(2) !== 0) {
-        setLow(low.toFixed(2))
-      }
-      setVolume(volume);
-    });
-  }
-
-  const updateOpenOrders = order => {
-    const finalOrders = [...openOrders, order];
-    setOpenOrders(finalOrders);
   }
 
   useEffect(() => {
-    const webSocketInstance = webSocket;
-    fetchMarketData(webSocketInstance)
-    fetchOrderBookBids(webSocketInstance)
-    fetchOrderBookAsks(webSocketInstance)
-    fetchLastTrade(webSocketInstance);
-    fetchNewTrade(webSocketInstance);
+    fetchMarketData()
+    fetchOrderBookData()
+    fetchLastTrade();
+    fetchNewTrade();
+    marketTokenActions.getTokensInfo()
+    // tokenActions.getOrderBookOrders()
+    transactionActions.getTransactionsOrders()
+    tokenActions.getGraphData()
+
+    // return webSocket.close();
   }, [])
 
+  if (!coins) return <p>Loading</p>
   return (
-    <S.Wrapper>
+    <S.Wrapper >
       <Menu handleChange={() => setState(!state)} />
-      {/*{state && <Market/>}*/}
+      {state && <Market coins={coins}/>}
       <S.WrapperMain >
-        <Navbar account={account} lastTradePrice={lastTradePrice} lastTradePriceType={lastTradePriceType}
-        blockValues={{volume, high, low, blockPrice}}/>
+        <Navbar currentToken={current} volume={volume} lastTradePrice={lastTradePrice} lastTradePriceType={lastTradePriceType} />
         <S.WrapperGraph marketActive={state}>
-          <Graph orderBookAsks={orderBookAsks}
-                 orderBookBids={orderBookBids}
-                 latestTransaction={lastTradePrice}
-                 latestTransactionType={lastTradePriceType}/>
-          <MarketOrder setOpenOrder={(order) => updateOpenOrders(order)}
-                       setActiveIndex={(index) => setActiveIndex(index)}
-                       validAccount={account}
-                       blockchainApi={blockchainApi}
-                       latestTransaction={lastTradePrice}
-                       price={price} setPrice={inputPrice => setPrice(inputPrice)}
-                       amount={amount} setAmount={inputAmount => setAmount(inputAmount)} />
+          <Graph orderBook={orderBook} latestTransaction={lastTradePrice} latestTransactionType={lastTradePriceType} graphData={graphData}/>
+          <MarketOrder />
+          <Transactions
+            newTradeData={newTrade}
+            data={transactions}
+            remove={transactionActions.removeTransactionsOrder}/>
         </S.WrapperGraph>
-        <Transactions
-          newTradeData={newTrade}
-          data={[]}
-          openOrderData={openOrders}
-          activeIndex={activeIndex}
-          setActiveIndex={(index) => setActiveIndex(index)}
-          remove={removeTransactionsOrder}/>
       </S.WrapperMain>
-      <Toast />
+
     </S.Wrapper>
   )
 }

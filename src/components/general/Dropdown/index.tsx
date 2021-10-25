@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from "react"
 
 import * as S from './styles'
 
@@ -11,20 +11,15 @@ export type DropdownProps = {
   title: string | number,
   children?: JSX.Element
   active?: boolean
-  setDropdownState?: any
   action?: (name:void)=> void
 }
 
-const Dropdown = ({ title="Select Value", children, active, setDropdownState }: DropdownProps) => {
-
-  useEffect(() => {
-    setState(active);
-  }, [active])
+const Dropdown = ({ title="Dropdown", children}: DropdownProps) => {
 
   const [state, setState] = useState(false)
   return (
     <S.Wrapper>
-      <S.Header onClick={() => setDropdownState(!active)}>
+      <S.Header onClick={() => setState(!state)}>
         <S.Title>{title}</S.Title>
         <S.WrapperImage>
           <S.Image src="/img/icons/ArrowTop.svg" active={state}/>

@@ -4,7 +4,6 @@ import * as S from './styles'
 export type NavbarItemPops = {
   label?: string
   info?: string
-  type?: string
 }
 const NavbarItem = ({label, info, type}: NavbarItemPops) => (
 <S.Wrapper>

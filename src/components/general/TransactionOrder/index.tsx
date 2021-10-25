@@ -28,16 +28,16 @@ const TransactionOrder = ({ data, remove }: Props) => (
     <S.Td>
       <S.Tag>Pair</S.Tag>
       <S.ContainerFlex>
-        <S.Image src={`img/cryptocurrencies/BTC.png`}  />
-        <span>BTC / USDT</span>
+        <S.Image src={`img/cryptocurrencies/${data.coin}.png`}  />
+        <span>{data.coin} / {data.pair}</span>
       </S.ContainerFlex>
     </S.Td>
 
     <S.Td>
       <S.Tag>Side</S.Tag>
       <S.ContainerFlex>
-        <S.Image src={`img/icons/${data.side === 'AskLimit' ? 'Sell' : 'Buy'}.svg`} />
-        <span>{data.side === 'AskLimit' ? 'Sell' : 'Buy'}</span>
+        <S.Image src={`img/icons/${data.side}.svg`} />
+        <span>{data.side}</span>
       </S.ContainerFlex>
     </S.Td>
 
@@ -48,12 +48,12 @@ const TransactionOrder = ({ data, remove }: Props) => (
 
     <S.Td>
       <S.Tag>Side</S.Tag>
-      <span>{data.quantity}</span>
+      <span>{data.fee} {data.coin}</span>
     </S.Td>
 
     <S.Td>
       <S.Tag>Side</S.Tag>
-      <span>{data.price * data.quantity}</span>
+      <span>{data.total} {data.pair}</span>
     </S.Td>
 
     <S.Td>

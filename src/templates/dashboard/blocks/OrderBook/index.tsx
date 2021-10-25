@@ -7,38 +7,21 @@ import {useMemo,useState} from "react"
 
 import { IOrderBookData } from '../Graph/IGraph'
 import * as S from './styles'
-import Dinero from 'dinero.js'
 
 type Props = {
-  orderBookAsks: IOrderBookData[],
-  orderBookBids: IOrderBookData[],
-  latestTransaction: number,
-  latestTransactionType: string,
+  data: IOrderBookData[]
 }
 
-const OrderBook = ({ orderBookBids, orderBookAsks, latestTransaction, latestTransactionType }: Props) => {
+const OrderBook = ({ data }: Props) => {
   const [filterState, setFilterState] = useState("Order")
-  const [sizeState, setSizeState] = useState(0.001)
-  const [dropdownState, setDropdownState] = useState(false)
+  const [sizeState, setSizeState] = useState(0.01)
 
   const handleChange = (select: string) => setFilterState(select)
-  const handleAction = (select: number) => {
-    setDropdownState(false)
-    setSizeState(select)
-  }
+  const handleAction = (select: number) => setSizeState(select)
 
-  const getDecimalPlaces = () => sizeState.toString().split('.')[1].length || 0
+  const lastOrderBook = (data) => data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
 
-  const updateDataSize = (orderBookData) => orderBookData.map(order => ({
-    ...order,
-    price: order.price.toFixed(getDecimalPlaces()),
-    amount: order.amount.toFixed(getDecimalPlaces()),
-    total: order.total.toFixed(getDecimalPlaces())
-  }));
-
-  // const lastOrderBook = (data) => data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
-  //
-  // const last = useMemo<IOrderBookData>(() => lastOrderBook(data), [data])
+  const last = useMemo<IOrderBookData>(() => lastOrderBook(data), [data])
 
   return (
     <S.Wrapper>
@@ -50,7 +33,7 @@ const OrderBook = ({ orderBookBids, orderBookAsks, latestTransaction, latestTran
             <OrderBookIcon icon="Order" filterState={filterState} handleChange={handleChange} />
             <OrderBookIcon icon="OrderDesc" filterState={filterState} handleChange={handleChange} />
           </S.ContainerActions>
-          <Dropdown title={sizeState} active={dropdownState} setDropdownState={setDropdownState}>
+          <Dropdown title={sizeState}>
             <>
               <DropdownItem title={0.1} handleAction={handleAction} />
               <DropdownItem title={0.01} handleAction={handleAction} />
@@ -62,10 +45,7 @@ const OrderBook = ({ orderBookBids, orderBookAsks, latestTransaction, latestTran
           </Dropdown>
         </S.ContainerTitle>
       </S.WrapperTitle>
-      <OrderBookTable orderBookAsks={updateDataSize(orderBookAsks)}
-                      orderBookBids={updateDataSize(orderBookBids)}
-                      latestTransaction={Dinero({ amount: Math.round(latestTransaction * 100) }).toFormat('$0,0.00')}
-                      latestTransactionType={latestTransactionType}/>
+      <OrderBookTable data={data} active={last && last.price}/>
     </S.Wrapper>
   )
 }

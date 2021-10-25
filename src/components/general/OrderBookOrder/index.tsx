@@ -4,9 +4,8 @@ import * as S from './styles'
 
 export type Props = {
   data: IOrderBookData
-  exchangeImg: string
 }
-const OrderBookOrder = ({data, exchangeImg}:Props) => (
+const OrderBookOrder = ({data}:Props) => (
   <S.Tr>
     <S.Td>
       {data.price}
@@ -14,8 +13,8 @@ const OrderBookOrder = ({data, exchangeImg}:Props) => (
     <S.Td>
       <S.ContainerFlex>
         <S.Span data={data}>{data.amount} {data.coin}</S.Span>
-        <S.Image src={exchangeImg} />
-        <span>{data.total} USDT</span>
+        <S.Image src="/img/icons/Exchange_A.svg"/>
+        <span>{data.total} {data.pair}</span>
       </S.ContainerFlex>
     </S.Td>
   </S.Tr>

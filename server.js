@@ -1,6 +1,6 @@
 const {ApiPromise, WsProvider} = require('@polkadot/api');
 
-// Connecting to Polkadex node
+// Connecting to Substrate node
 const wsProvider = new WsProvider('ws://localhost:9944');
 
 // Testnet Config Parameters

@@ -5,10 +5,7 @@ import { ListItemProps } from '.'
 const wrapperModifier = {
   Default: (theme: DefaultTheme) => css`
     height: 3.6rem;
-    padding: 0.7rem 1rem;
-    display: flex;
-    align-items: center;
-    text-align: center;
+    padding:1.1rem 0.9rem 0 0.9rem;
     font-size: ${theme.font.sizes.xsmall};
   `,
   Small: (theme:DefaultTheme) => css`
@@ -35,14 +32,11 @@ const wrapperModifier = {
   `,
   FullWidth: () => css`
     width: 100%;
-  `,
-  Selected: () => css`
-    background-color: #FF0877;
   `
 }
 
 export const Wrapper = styled.div<Partial<ListItemProps>>`
-${({ theme, size, darkMode, fullWidth, selected }) => css`
+${({ theme, size, darkMode, fullWidth }) => css`
   border: 0;
   border-radius: ${theme.border.radius};
   padding: ${theme.spacings.xxsmall};
@@ -52,9 +46,8 @@ ${({ theme, size, darkMode, fullWidth, selected }) => css`
   cursor: pointer;
 
   ${wrapperModifier[size](theme)}
-  ${darkMode ? wrapperModifier.Dark(theme) : wrapperModifier.Light(theme)}
-  ${fullWidth && wrapperModifier.FullWidth()}
-  ${selected && wrapperModifier.Selected()}
+  ${darkMode ? wrapperModifier.Dark(theme) : wrapperModifier.Light(theme) }
+  ${fullWidth && wrapperModifier.FullWidth() }
 
   :hover {
     opacity: ${theme.colors.black};

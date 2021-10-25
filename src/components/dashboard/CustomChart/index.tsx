@@ -1,12 +1,11 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent } from 'react'
 
-import DataFeed from './api/'
 import * as S from './styles'
 import {
-  widget,
   ChartingLibraryWidgetOptions,
-  LanguageCode,
   IChartingLibraryWidget,
+  LanguageCode,
+  widget,
 } from '../../../../public/static/charting_library'
 
 export interface ChartContainerProps {
@@ -36,17 +35,19 @@ function getLanguageFromURL(): LanguageCode | null {
 }
 
 export class ChartContainer extends PureComponent<Partial<ChartContainerProps>, ChartContainerState> {
-  public static defaultProps = {
-    symbol: 'BTC',
+  public static defaultProps: ChartContainerProps = {
+    symbol: 'AAPL',
     interval: '1',
     containerId: 'tv_chart_container',
+    datafeedUrl: 'https://demo_feed.tradingview.com',
     libraryPath: '/static/charting_library/',
     chartsStorageUrl: 'https://saveload.tradingview.com',
     chartsStorageApiVersion: '1.1',
     clientId: 'tradingview.com',
     userId: 'public_user_id',
     fullscreen: false,
-    autosize: true
+    autosize: true,
+    studiesOverrides: {},
   };
 
   private tvWidget: IChartingLibraryWidget | null = null;
@@ -54,7 +55,7 @@ export class ChartContainer extends PureComponent<Partial<ChartContainerProps>, 
   public componentDidMount(): void {
     const widgetOptions: ChartingLibraryWidgetOptions = {
       symbol: this.props.symbol as string,
-      datafeed: DataFeed,
+      datafeed: new (window as any).Datafeeds.UDFCompatibleDatafeed(this.props.datafeedUrl),
       interval: this.props.interval as ChartingLibraryWidgetOptions['interval'],
       container_id: this.props.containerId as ChartingLibraryWidgetOptions['container_id'],
       library_path: this.props.libraryPath as string,
@@ -76,33 +77,23 @@ export class ChartContainer extends PureComponent<Partial<ChartContainerProps>, 
       user_id: this.props.userId,
       fullscreen: this.props.fullscreen,
       autosize: this.props.autosize,
+      studies_overrides: this.props.studiesOverrides,
       loading_screen:  { backgroundColor: "#2E303C" },
-      studies_overrides: {
-        "volume.volume.color.0": "#E6007A",
-        "volume.volume.color.1": "#0CA564",
-      },
       overrides: {
-        "paneProperties.background": "#22232d",
-        "paneProperties.vertGridProperties.color": "#b1b1b100",
-        "paneProperties.horzGridProperties.color": "#b1b1b100",
+        "paneProperties.background": "#2E303C",
+        "paneProperties.vertGridProperties.color": "#b1b1b1",
+        "paneProperties.horzGridProperties.color": "#b1b1b1",
         "symbolWatermarkProperties.transparency": 90,
         "scalesProperties.textColor": "#fff",
+        "scalesProperties.bgColor": "#AAA",
         "scalesProperties.fontSize": 11,
-        "scalesProperties.backgroundColor": "#2E303C",
         "paneProperties.topMargin": 15,
-        "mainSeriesProperties.candleStyle.upColor": '#0CA564',
-        "mainSeriesProperties.candleStyle.downColor": '#E6007A',
-        "mainSeriesProperties.candleStyle.borderUpColor": "#0CA564",
-        "mainSeriesProperties.candleStyle.borderDownColor": "#E6007A",
-        "mainSeriesProperties.candleStyle.wickUpColor": "#0CA564",
-        "mainSeriesProperties.candleStyle.wickDownColor": "#E6007A"
+        "mainSeriesProperties.candleStyle.wickUpColor": '#336854',
+        "mainSeriesProperties.candleStyle.wickDownColor": '#7f323f',
       }
     };
 
-    const tvWidget = new widget(widgetOptions);
-    this.tvWidget = tvWidget;
-
-    tvWidget.onChartReady(() => console.log('Chart has loaded'))
+    this.tvWidget = new widget(widgetOptions);
   }
 
   public componentWillUnmount(): void {
